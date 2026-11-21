@@ -20,7 +20,7 @@ export type ClassRoom = {
   quran: Record<string, Record<number, number>>;
 };
 export type Settings = {
-  teacherName: string; lang: 'ar' | 'en'; sound: boolean; theme: 'light' | 'dark';
+  teacherName: string; lang: 'ar' | 'en'; sound: boolean; theme: 'system' | 'light' | 'dark';
   arabicDigits: boolean; onboarded: boolean; allowNegative: boolean;
 };
 
@@ -88,7 +88,7 @@ const patchActive = (s: State, fn: (c: ClassRoom) => ClassRoom) => ({
 export const useStore = create<State>()(
   persist(
     (set, get) => ({
-      settings: { teacherName: '', lang: 'ar', sound: true, theme: 'light', arabicDigits: true, onboarded: false, allowNegative: false },
+      settings: { teacherName: '', lang: 'ar', sound: true, theme: 'system', arabicDigits: true, onboarded: false, allowNegative: false },
       classes: [first],
       activeId: first.id,
       behaviors: DEFAULT_BEHAVIORS,

@@ -1,7 +1,8 @@
 import { motion } from 'motion/react';
 import { useRef, useState } from 'react';
 import { Logo, Mascot } from '../components/Decor';
-import { Modal, Switch, useUI } from '../components/ui';
+import { Modal, Seg, Switch, askConfirm, useUI } from '../components/ui';
+import { saveFile } from '../lib/platform';
 import { Behavior, Reward } from '../data/islamic';
 import { useNum, useT } from '../i18n';
 import { sfx } from '../lib/sound';
@@ -18,13 +19,11 @@ export default function Settings() {
   const [editClass, setEditClass] = useState<{ id?: string; name: string; emoji: string } | null>(null);
   const toast = useUI((s) => s.toast);
 
-  const exportData = () => {
+  const exportData = async () => {
     const { classes, activeId, behaviors, rewards, settings } = useStore.getState();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify({ app: 'noor', v: 1, classes, activeId, behaviors, rewards, settings }, null, 2)], { type: 'application/json' }));
-    a.download = `noor-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    toast('💾 تم تنزيل النسخة الاحتياطية');
+    const json = JSON.stringify({ app: 'noor', v: 1, classes, activeId, behaviors, rewards, settings }, null, 2);
+    const r = await saveFile(`noor-backup-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json');
+    toast(r === 'saved' ? '💾 تم حفظ النسخة الاحتياطية' : r === 'declined' ? 'لم يُحفظ الملف' : '⚠️ تعذّر حفظ الملف هنا');
   };
   const importData = (f: File) => {
     f.text().then((txt) => {
@@ -55,7 +54,7 @@ export default function Settings() {
                 <div style={{ flex: 1 }}><div className="t">{c.name}</div><div className="d">{num(c.students.length)} طالب</div></div>
                 {c.id === st.activeId ? <span className="chip pos">الحالي</span> : <button className="btn sm soft" onClick={() => { st.setActive(c.id); toast(`🔁 انتقلت إلى ${c.name}`); }}>فتح</button>}
                 <button className="btn sm icon ghost" onClick={() => setEditClass({ id: c.id, name: c.name, emoji: c.emoji })}>✏️</button>
-                <button className="btn sm icon ghost" onClick={() => confirm(`حذف «${c.name}» وكل بياناته؟ لا يمكن التراجع.`) && st.deleteClass(c.id)}>🗑️</button>
+                <button className="btn sm icon ghost" onClick={async () => (await askConfirm(`حذف «${c.name}» وكل بياناته؟ لا يمكن التراجع.`, '🗑️ حذف الصف')) && st.deleteClass(c.id)}>🗑️</button>
               </div>
             ))}
           </div>
@@ -65,7 +64,9 @@ export default function Settings() {
               <div className="seg">{(['ar', 'en'] as const).map((l) => <button key={l} className={settings.lang === l ? 'on' : ''} style={settings.lang === l ? { background: 'var(--brand)', color: '#fff' } : {}} onClick={() => setSettings({ lang: l })}><span>{l === 'ar' ? 'العربية' : 'English'}</span></button>)}</div>
             </Row>
             <Row icon="🔊" title={t('الصوت')} desc="مؤثرات النقاط والألعاب"><Switch on={settings.sound} onChange={(v) => { setSettings({ sound: v }); v && sfx.pop(); }} /></Row>
-            <Row icon="🌙" title={t('الوضع الليلي')} desc="ألوان مريحة للعين"><Switch on={settings.theme === 'dark'} onChange={(v) => setSettings({ theme: v ? 'dark' : 'light' })} /></Row>
+            <Row icon="🌙" title={t('الوضع الليلي')} desc="تلقائي يتبع إعداد جهازك">
+              <Seg value={settings.theme} onChange={(v) => setSettings({ theme: v })} options={[{ v: 'system', label: 'تلقائي' }, { v: 'light', label: '☀️' }, { v: 'dark', label: '🌙' }]} />
+            </Row>
             <Row icon="١٢" title={t('الأرقام العربية')} desc="٠١٢٣ بدلًا من 0123"><Switch on={settings.arabicDigits} onChange={(v) => setSettings({ arabicDigits: v })} /></Row>
             <Row icon="➖" title="السماح برصيد سالب" desc="عند الإيقاف لا ينزل الرصيد تحت الصفر (أفضل للأطفال)"><Switch on={settings.allowNegative} onChange={(v) => setSettings({ allowNegative: v })} /></Row>
           </div>
@@ -80,8 +81,8 @@ export default function Settings() {
             </div>
             <div className="divider" />
             <div className="row wrap">
-              <button className="btn danger" onClick={() => confirm('تصفير نقاط الصف الحالي وسجلّه؟ (يبقى الطلاب والحضور والحفظ)') && (st.resetPoints(), toast('🔄 تم تصفير النقاط'))}>🔄 تصفير النقاط (بداية فصل جديد)</button>
-              <button className="btn danger" onClick={() => confirm('حذف كل البيانات نهائيًا؟') && confirm('متأكد؟ لا يمكن التراجع!') && st.resetAll()}>⚠️ حذف كل شيء</button>
+              <button className="btn danger" onClick={async () => { if (await askConfirm('تصفير نقاط الصف الحالي وسجلّه؟ يبقى الطلاب والحضور والحفظ.', '🔄 تصفير')) { st.resetPoints(); toast('🔄 تم تصفير النقاط'); } }}>🔄 تصفير النقاط (بداية فصل جديد)</button>
+              <button className="btn danger" onClick={async () => (await askConfirm('حذف كل الصفوف والطلاب والسجلات نهائيًا؟ لا يمكن التراجع. ننصح بأخذ نسخة احتياطية أولًا.', '⚠️ حذف كل شيء')) && st.resetAll()}>⚠️ حذف كل شيء</button>
             </div>
           </div>
         </div>

@@ -166,6 +166,20 @@ export const fadeUp = {
   show: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: Math.min(i, 20) * 0.035, type: 'spring' as const, stiffness: 260, damping: 24 } }),
 };
 
-export function confirmAsk(msg: string) {
-  return window.confirm(msg);
+// ───────── In-app confirm (window.confirm is blocked inside published pages) ─────────
+type Ask = { msg: string; ok: string; danger: boolean; resolve: (v: boolean) => void };
+const useAsk = create<{ ask: Ask | null }>(() => ({ ask: null }));
+export function askConfirm(msg: string, ok = 'نعم، متأكد', danger = true): Promise<boolean> {
+  return new Promise((resolve) => useAsk.setState({ ask: { msg, ok, danger, resolve } }));
+}
+export function ConfirmHost() {
+  const ask = useAsk((s) => s.ask);
+  const close = (v: boolean) => { ask?.resolve(v); useAsk.setState({ ask: null }); };
+  return (
+    <Modal open={!!ask} onClose={() => close(false)} title="هل أنت متأكد؟" icon="⚠️"
+      footer={<><button className="btn ghost" onClick={() => close(false)}>إلغاء</button>
+        <button className={`btn ${ask?.danger ? 'danger' : 'primary'}`} autoFocus onClick={() => close(true)}>{ask?.ok}</button></>}>
+      <p style={{ fontSize: 17, lineHeight: 1.7 }}>{ask?.msg}</p>
+    </Modal>
+  );
 }

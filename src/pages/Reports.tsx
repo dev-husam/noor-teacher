@@ -1,7 +1,8 @@
 import { motion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { ProfileModal } from '../components/students';
-import { Avatar, Empty, Seg } from '../components/ui';
+import { Avatar, Empty, Seg, useUI } from '../components/ui';
+import { CAN_PRINT, saveFile } from '../lib/platform';
 import { useNum, useT } from '../i18n';
 import { attendanceRate, quranCount, startOfDay, useClass } from '../store';
 
@@ -31,14 +32,12 @@ export default function Reports() {
   });
   const needsCare = rows.filter((r) => r.minus >= 3 || (r.att !== null && r.att < 0.75));
 
-  const csv = () => {
+  const csv = async () => {
     const head = ['الاسم', 'الرصيد', 'مجموع النقاط', 'نقاط الفترة', 'ملاحظات سلبية', 'الحضور %', 'سور محفوظة', 'ولي الأمر', 'الجوال'];
     const body = rows.map((r) => [r.s.name, r.s.points, r.s.earned, r.plus, r.minus, r.att === null ? '' : Math.round(r.att * 100), r.q, r.s.parentName, r.s.parentPhone]);
     const text = '﻿' + [head, ...body].map((r) => r.map((x) => `"${String(x ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' }));
-    a.download = `تقرير-${c.name}.csv`;
-    a.click();
+    const r = await saveFile(`noor-report-${new Date().toISOString().slice(0, 10)}.csv`, text, 'text/csv;charset=utf-8');
+    if (r === 'failed') useUI.getState().toast('⚠️ تعذّر حفظ الملف هنا');
   };
 
   if (!c.students.length) return <div><div className="topbar"><h1>📈 {t('التقارير')}</h1></div><div className="card"><Empty emoji="📈" title="لا توجد بيانات بعد" /></div></div>;
@@ -50,7 +49,7 @@ export default function Reports() {
         <div className="spacer" />
         <Seg value={range} onChange={setRange} options={[{ v: '7', label: '٧ أيام' }, { v: '30', label: '٣٠ يومًا' }, { v: 'all', label: 'الكل' }]} />
         <button className="btn" onClick={csv}>📥 Excel</button>
-        <button className="btn" onClick={() => window.print()}>🖨️ {t('طباعة')}</button>
+        {CAN_PRINT && <button className="btn" onClick={() => window.print()}>🖨️ {t('طباعة')}</button>}
       </div>
 
       <div className="stats" style={{ marginBottom: 16 }}>

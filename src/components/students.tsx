@@ -5,7 +5,8 @@ import { timeAgo, useNum, useT } from '../i18n';
 import { burst, fromEl, stars } from '../lib/fx';
 import { sfx } from '../lib/sound';
 import { Student, attendanceRate, badgesFor, quranCount, todayKey, useClass, useStore } from '../store';
-import { Avatar, Modal, Seg, useUI } from './ui';
+import { Avatar, Modal, Seg, askConfirm, useUI } from './ui';
+import { CAN_PRINT, copyText } from '../lib/platform';
 
 // ───────── Award hook: sound + floaters + confetti + undo toast + level-up ─────────
 export function useAward() {
@@ -275,9 +276,9 @@ export function ProfileModal({ sid, onClose }: { sid: string | null; onClose: ()
                 </div>
               )}
               <div className="row wrap no-print">
-                <button className="btn soft" onClick={() => window.print()}>🖨️ طباعة التقرير</button>
+                {CAN_PRINT && <button className="btn soft" onClick={() => window.print()}>🖨️ طباعة التقرير</button>}
                 {wa ? <a className="btn" style={{ background: '#25D366', color: '#fff', border: 0, textDecoration: 'none' }} href={wa} target="_blank" rel="noreferrer">💬 إرسال لولي الأمر</a>
-                  : <button className="btn" onClick={() => { navigator.clipboard?.writeText(report); useUI.getState().toast('📋 نُسخ التقرير — أضف رقم ولي الأمر للإرسال المباشر'); }}>📋 نسخ تقرير ولي الأمر</button>}
+                  : <button className="btn" onClick={async () => { useUI.getState().toast(await copyText(report) ? '📋 نُسخ التقرير — أضف رقم ولي الأمر للإرسال المباشر' : '⚠️ تعذّر النسخ — حاول مرة أخرى'); }}>📋 نسخ تقرير ولي الأمر</button>}
               </div>
             </div>
           )}
@@ -318,7 +319,7 @@ export function ProfileModal({ sid, onClose }: { sid: string | null; onClose: ()
             <div>
               <StudentForm initial={s} onCancel={() => setTab('over')} onSave={(p) => { updateStudent(s.id, p); useUI.getState().toast('✅ تم حفظ البيانات'); setTab('over'); }} />
               <div className="divider" />
-              <button className="btn danger" onClick={() => { if (confirm(`حذف ${s.name} وكل سجلّه نهائيًا؟`)) { removeStudent(s.id); onClose(); useUI.getState().toast('🗑️ تم حذف الطالب'); } }}>🗑️ حذف الطالب</button>
+              <button className="btn danger" onClick={async () => { if (await askConfirm(`حذف ${s.name} وكل سجلّه نهائيًا؟ لا يمكن التراجع.`, '🗑️ حذف')) { removeStudent(s.id); onClose(); useUI.getState().toast('🗑️ تم حذف الطالب'); } }}>🗑️ حذف الطالب</button>
             </div>
           )}
         </motion.div>

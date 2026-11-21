@@ -1,7 +1,7 @@
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { Logo, Mascot } from './components/Decor';
-import { Floaters, Modal, Page, Toasts, useUI } from './components/ui';
+import { ConfirmHost, Floaters, Modal, Page, Toasts, useUI } from './components/ui';
 import { useT } from './i18n';
 import { burst } from './lib/fx';
 import { sfx } from './lib/sound';
@@ -32,6 +32,7 @@ const NAV: { id: Page; ico: string; ar: string }[] = [
   { id: 'settings', ico: '⚙️', ar: 'الإعدادات' },
 ];
 const MOBILE: Page[] = ['home', 'students', 'tools', 'quran'];
+let themeSetByApp = false;
 
 const PAGES: Record<Page, () => JSX.Element> = {
   home: Home, students: Students, attendance: Attendance, tools: Tools, quran: Quran, games: Games,
@@ -43,12 +44,14 @@ export default function App() {
   const settings = useStore((s) => s.settings);
   const t = useT();
   const [more, setMore] = useState(false);
-  const [splash, setSplash] = useState(() => !sessionStorage.getItem('noor-splash'));
+  const [splash, setSplash] = useState(() => { try { return !sessionStorage.getItem('noor-splash'); } catch { return true; } });
 
   useEffect(() => {
     document.documentElement.dir = settings.lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = settings.lang;
-    document.documentElement.dataset.theme = settings.theme;
+    // 'system' leaves the theme to the OS / the page host; light & dark are explicit choices
+    if (settings.theme === 'system') { if (themeSetByApp) { delete document.documentElement.dataset.theme; themeSetByApp = false; } }
+    else { document.documentElement.dataset.theme = settings.theme; themeSetByApp = true; }
   }, [settings.lang, settings.theme]);
   useEffect(() => {
     if (!splash) return;
@@ -73,7 +76,7 @@ export default function App() {
             </button>
           ))}
           <div className="sidebar-foot">
-            <div className="row" style={{ gap: 0, justifyContent: 'center', opacity: 0.95 }}><Mascot size={54} mood={settings.theme === 'dark' ? 'sleep' : 'happy'} /></div>
+            <div className="row" style={{ gap: 0, justifyContent: 'center', opacity: 0.95 }}><Mascot size={54} /></div>
           </div>
         </aside>
 
@@ -113,6 +116,7 @@ export default function App() {
       <Toasts />
       <Floaters />
       <Welcome />
+      <ConfirmHost />
       <AnimatePresence>
         {splash && (
           <motion.div className="fullscreen" style={{ background: 'radial-gradient(circle at 50% 40%, #1fc98e, #0a7c5c 60%, #064e3b)', zIndex: 500 }}

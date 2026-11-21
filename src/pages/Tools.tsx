@@ -2,7 +2,8 @@ import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { Mascot } from '../components/Decor';
 import { useAward } from '../components/students';
-import { Avatar, Empty, Seg, Switch, useUI, Portal } from '../components/ui';
+import { Avatar, Empty, Seg, Switch, useUI, Portal, askConfirm } from '../components/ui';
+import { IS_ARTIFACT } from '../lib/platform';
 import { SIGNALS, TEAM_PRESETS } from '../data/islamic';
 import { useNum, useT } from '../i18n';
 import { burst, celebrate } from '../lib/fx';
@@ -351,7 +352,7 @@ function Noise() {
         raf = requestAnimationFrame(loop);
       };
       loop();
-    }).catch(() => { setErr('لم نتمكن من الوصول إلى الميكروفون. اسمح للمتصفح باستخدامه ثم أعد المحاولة.'); setOn(false); });
+    }).catch(() => { setErr(IS_ARTIFACT ? 'الميكروفون غير متاح في الصفحة المنشورة. شغّل التطبيق على جهازك لاستخدام مقياس الهدوء.' : 'لم نتمكن من الوصول إلى الميكروفون. اسمح للمتصفح باستخدامه ثم أعد المحاولة.'); setOn(false); });
     return () => { cancelAnimationFrame(raf); stream.current?.getTracks().forEach((t) => t.stop()); ctx?.close(); };
   }, [on]);
 
@@ -434,7 +435,7 @@ function Groups() {
         <div className="card">
           <div className="row" style={{ marginBottom: 12 }}>
             <div className="card-title" style={{ margin: 0 }}>🏁 الفرق الحالية</div><div className="spacer" />
-            <button className="btn sm danger" onClick={() => confirm('إلغاء الفرق الحالية؟') && clearTeams()}>إلغاء الفرق</button>
+            <button className="btn sm danger" onClick={async () => (await askConfirm('إلغاء الفرق الحالية؟ تُحذف نقاط الفرق الإضافية.', 'إلغاء الفرق')) && clearTeams()}>إلغاء الفرق</button>
           </div>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
             {c.teams.map((tm) => (

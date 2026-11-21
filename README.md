@@ -2,12 +2,18 @@
 
 تطبيق ويب عربي أولًا (RTL) لإدارة صفوف التربية الإسلامية وحلقات القرآن للأطفال.
 
+## روابط
+
+- 🚀 التطبيق المنشور: https://claude.ai/artifact/2WJ4f7AiTapmBHAchKKA3M
+- 🎨 دليل الهوية: https://claude.ai/artifact/Lc1qw2mgMisNqDG8yuwPdY
+
 ## التشغيل
 
 ```bash
 npm install
 npm run dev      # http://localhost:5180
 npm run build    # نسخة الإنتاج في dist/
+npm run build:artifact   # نسخة الصفحة المنشورة على claude.ai (بدون طباعة، والحفظ عبر نافذة التنزيل)
 ```
 
 ## الأقسام
