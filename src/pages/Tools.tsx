@@ -9,13 +9,14 @@ import { useNum, useT } from '../i18n';
 import { burst, celebrate } from '../lib/fx';
 import { sfx } from '../lib/sound';
 import { presentIds, teamScore, useClass, useStore } from '../store';
+import Popcorn from './Popcorn';
 
-type Tab = 'wheel' | 'timer' | 'noise' | 'groups' | 'signals';
+type Tab = 'popcorn' | 'wheel' | 'timer' | 'noise' | 'groups' | 'signals';
 
 export default function Tools() {
   const t = useT();
   const sub = useUI((s) => s.sub) as Tab | null;
-  const [tab, setTab] = useState<Tab>(sub || 'wheel');
+  const [tab, setTab] = useState<Tab>(sub || 'popcorn');
   useEffect(() => { if (sub) setTab(sub); }, [sub]);
   return (
     <div>
@@ -24,6 +25,7 @@ export default function Tools() {
       </div>
       <div className="tabs">
         <Seg value={tab} onChange={setTab} options={[
+          { v: 'popcorn', label: <>🍿 {t('ماكينة الفشار')}</> },
           { v: 'wheel', label: <>🎡 {t('اختيار عشوائي')}</> },
           { v: 'timer', label: <>⏱️ {t('المؤقّت')}</> },
           { v: 'signals', label: <>🚦 {t('إشارات الصف')}</> },
@@ -33,6 +35,7 @@ export default function Tools() {
       </div>
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.2 }}>
+          {tab === 'popcorn' && <Popcorn />}
           {tab === 'wheel' && <Wheel />}
           {tab === 'timer' && <Timer />}
           {tab === 'signals' && <Signals />}

@@ -30,6 +30,7 @@ const EN: Record<string, string> = {
   'نجم اليوم': 'Star of the day',
   'وصول سريع': 'Quick actions',
   'آخر النشاطات': 'Recent activity',
+  'ماكينة الفشار': 'Popcorn machine',
   'اختيار عشوائي': 'Random pick',
   'المؤقّت': 'Timer',
   'مقياس الهدوء': 'Noise meter',

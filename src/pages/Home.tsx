@@ -45,6 +45,7 @@ export default function Home() {
   const maxW = Math.max(5, ...week.map((w) => w.v));
 
   const quick = [
+    { e: '🍿', l: t('ماكينة الفشار'), c: '#FF69B4', on: () => go('tools', 'popcorn') },
     { e: '🎡', l: t('اختيار عشوائي'), c: '#8B5CF6', on: () => go('tools', 'wheel') },
     { e: '⏱️', l: t('المؤقّت'), c: '#0EA5E9', on: () => go('tools', 'timer') },
     { e: '🔔', l: t('انتباه!'), c: '#EC4899', on: () => go('tools', 'signals') },

@@ -46,6 +46,7 @@ type State = {
   activeId: string;
   behaviors: Behavior[];
   rewards: Reward[];
+  popcorn: PopcornData;
   // settings
   setSettings: (p: Partial<Settings>) => void;
   // classes
@@ -74,6 +75,11 @@ type State = {
   makeTeams: (groups: string[][]) => void;
   teamBonus: (teamId: string, n: number) => void;
   clearTeams: () => void;
+  // popcorn machine
+  setPopcornPrefs: (p: Partial<PopcornPrefs>) => void;
+  setPopcornUsed: (classId: string, ids: string[]) => void;
+  logPopcorn: (classId: string, ids: string[]) => void;
+  clearPopcornHistory: (classId: string) => void;
   // data
   loadDemo: () => void;
   importAll: (data: any) => boolean;
@@ -86,6 +92,16 @@ const patchActive = (s: State, fn: (c: ClassRoom) => ClassRoom) => ({
   classes: s.classes.map((c) => (c.id === s.activeId ? fn(c) : c)),
 });
 
+// ───────── Popcorn machine (random picker) ─────────
+export type PopcornPrefs = { winners: 1 | 2 | 3 | 5; speed: 'slow' | 'normal' | 'fast'; noRepeat: boolean; autoCelebrate: boolean; music: boolean };
+export type PopcornDraw = { ids: string[]; at: number };
+/** Per-class popcorn state: who was already picked this round, and the winners log. */
+export type PopcornData = { prefs: PopcornPrefs; used: Record<string, string[]>; history: Record<string, PopcornDraw[]> };
+export const POPCORN_DEFAULTS: PopcornData = {
+  prefs: { winners: 1, speed: 'normal', noRepeat: true, autoCelebrate: true, music: false },
+  used: {}, history: {},
+};
+
 export const useStore = create<State>()(
   persist(
     (set, get) => ({
@@ -94,6 +110,14 @@ export const useStore = create<State>()(
       activeId: first.id,
       behaviors: DEFAULT_BEHAVIORS,
       rewards: DEFAULT_REWARDS,
+      popcorn: POPCORN_DEFAULTS,
+
+      setPopcornPrefs: (p) => set((s) => ({ popcorn: { ...s.popcorn, prefs: { ...s.popcorn.prefs, ...p } } })),
+      setPopcornUsed: (classId, ids) => set((s) => ({ popcorn: { ...s.popcorn, used: { ...s.popcorn.used, [classId]: ids } } })),
+      logPopcorn: (classId, ids) => set((s) => ({
+        popcorn: { ...s.popcorn, history: { ...s.popcorn.history, [classId]: [{ ids, at: Date.now() }, ...(s.popcorn.history[classId] || [])].slice(0, 200) } },
+      })),
+      clearPopcornHistory: (classId) => set((s) => ({ popcorn: { ...s.popcorn, history: { ...s.popcorn.history, [classId]: [] }, used: { ...s.popcorn.used, [classId]: [] } } })),
 
       setSettings: (p) => set((s) => ({ settings: { ...s.settings, ...p } })),
 
@@ -245,7 +269,14 @@ export const useStore = create<State>()(
         set({ classes: [c], activeId: c.id, behaviors: DEFAULT_BEHAVIORS, rewards: DEFAULT_REWARDS, settings: { ...get().settings, onboarded: false } });
       },
     }),
-    { name: 'noor-teacher-v1', storage: createJSONStorage(() => deviceStorage) },
+    {
+      name: 'noor-teacher-v1',
+      storage: createJSONStorage(() => deviceStorage),
+      merge: (saved: any, cur) => ({
+        ...cur, ...saved,
+        popcorn: { ...POPCORN_DEFAULTS, ...(saved?.popcorn || {}), prefs: { ...POPCORN_DEFAULTS.prefs, ...(saved?.popcorn?.prefs || {}) } },
+      }),
+    },
   ),
 );
 
