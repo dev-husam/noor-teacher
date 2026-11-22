@@ -61,6 +61,7 @@ export default function Settings() {
           </div>
           <div className="card">
             <div className="row" style={{ marginBottom: 8 }}><div className="card-title" style={{ margin: 0 }}>🏫 {t('الصفوف')}</div><div className="spacer" />
+              <button className="btn sm" onClick={() => useUI.getState().go('manage', 'classes')}>🗂️ إدارة</button>
               <button className="btn sm primary" onClick={() => setEditClass({ name: '', emoji: '🌙' })}>➕ صف جديد</button></div>
             {st.classes.map((c) => (
               <div key={c.id} className="setting-row">

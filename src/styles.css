@@ -416,3 +416,13 @@ table.t th.sticky { z-index: 4; background: var(--surface-2); }
   body.print-cert .cert-print { display: block; }
   body.print-cert .cert-print img { width: 100%; height: auto; }
 }
+
+/* ───────── Management page ───────── */
+.manage-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.manage-row .mr-main { flex: 1 1 160px; min-width: 0; }
+.manage-row .mr-main b { overflow-wrap: anywhere; }
+.manage-bar {
+  position: sticky; bottom: 12px; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 18px; background: var(--surface); border: 2px solid var(--brand); box-shadow: var(--shadow-lg);
+}
+@media (max-width: 900px) { .manage-bar { bottom: 84px; } }

@@ -6,7 +6,7 @@ import { levelOf } from '../data/islamic';
 import type { Student } from '../store';
 
 // ───────── UI store: toasts, floating points, navigation ─────────
-export type Page = 'home' | 'students' | 'attendance' | 'tools' | 'quran' | 'games' | 'learn' | 'rewards' | 'leaders' | 'reports' | 'settings';
+export type Page = 'home' | 'students' | 'manage' | 'attendance' | 'tools' | 'quran' | 'games' | 'learn' | 'rewards' | 'leaders' | 'reports' | 'settings';
 type Toast = { id: number; text: string; undo?: () => void };
 type Floater = { id: number; x: number; y: number; text: string; color: string };
 

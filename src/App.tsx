@@ -9,6 +9,7 @@ import Attendance from './pages/Attendance';
 import Games from './pages/Games';
 import Home from './pages/Home';
 import Leaders from './pages/Leaders';
+import Manage from './pages/Manage';
 import Learn from './pages/Learn';
 import Quran from './pages/Quran';
 import Reports from './pages/Reports';
@@ -21,6 +22,7 @@ import { useClass, useStore } from './store';
 const NAV: { id: Page; ico: string; ar: string }[] = [
   { id: 'home', ico: '🏠', ar: 'الرئيسية' },
   { id: 'students', ico: '👦', ar: 'الطلاب' },
+  { id: 'manage', ico: '🗂️', ar: 'إدارة الصفوف والطلاب' },
   { id: 'attendance', ico: '📅', ar: 'الحضور' },
   { id: 'tools', ico: '🧰', ar: 'أدوات الصف' },
   { id: 'quran', ico: '📖', ar: 'القرآن' },
@@ -35,7 +37,7 @@ const MOBILE: Page[] = ['home', 'students', 'tools', 'quran'];
 let themeSetByApp = false;
 
 const PAGES: Record<Page, () => JSX.Element> = {
-  home: Home, students: Students, attendance: Attendance, tools: Tools, quran: Quran, games: Games,
+  home: Home, students: Students, manage: Manage, attendance: Attendance, tools: Tools, quran: Quran, games: Games,
   learn: Learn, rewards: Rewards, leaders: Leaders, reports: Reports, settings: Settings,
 };
 

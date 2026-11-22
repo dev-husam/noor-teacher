@@ -53,15 +53,18 @@ type State = {
   // settings
   setSettings: (p: Partial<Settings>) => void;
   // classes
-  addClass: (name: string, emoji?: string) => void;
+  addClass: (name: string, emoji?: string, activate?: boolean) => string;
   updateClass: (id: string, p: Partial<Pick<ClassRoom, 'name' | 'emoji'>>) => void;
   deleteClass: (id: string) => void;
   setActive: (id: string) => void;
   setGoal: (g: ClassGoal | null) => void;
   // students
-  addStudents: (list: (Partial<Student> & { name: string })[]) => void;
+  addStudents: (list: (Partial<Student> & { name: string })[], classId?: string) => void;
   updateStudent: (id: string, p: Partial<Student>) => void;
   removeStudent: (id: string) => void;
+  removeStudents: (ids: string[]) => void;
+  /** Move students (with their points history, Qur'an progress and attendance) to another class. */
+  moveStudents: (ids: string[], toClassId: string) => void;
   // points
   award: (sids: string[], b: { label: string; emoji: string; value: number; bid?: string }, kind?: LogKind) => string[];
   undo: (logIds: string[]) => void;
@@ -125,10 +128,11 @@ export const useStore = create<State>()(
 
       setSettings: (p) => set((s) => ({ settings: { ...s.settings, ...p } })),
 
-      addClass: (name, emoji) => set((s) => {
+      addClass: (name, emoji, activate = true) => {
         const c = newClass(name, emoji);
-        return { classes: [...s.classes, c], activeId: c.id };
-      }),
+        set((s) => ({ classes: [...s.classes, c], activeId: activate ? c.id : s.activeId }));
+        return c.id;
+      },
       setGoal: (g) => set((s) => patchActive(s, (c) => ({ ...c, goal: g }))),
       updateClass: (id, p) => set((s) => ({ classes: s.classes.map((c) => (c.id === id ? { ...c, ...p } : c)) })),
       deleteClass: (id) => set((s) => {
@@ -138,15 +142,63 @@ export const useStore = create<State>()(
       }),
       setActive: (id) => set({ activeId: id }),
 
-      addStudents: (list) => set((s) => patchActive(s, (c) => ({
-        ...c, students: [...c.students, ...list.map((p, i) => makeStudent(p, c.students.length + i))],
-      }))),
-      updateStudent: (id, p) => set((s) => patchActive(s, (c) => ({
-        ...c, students: c.students.map((st) => (st.id === id ? { ...st, ...p } : st)),
-      }))),
-      removeStudent: (id) => set((s) => patchActive(s, (c) => ({
-        ...c, students: c.students.filter((st) => st.id !== id), logs: c.logs.filter((l) => l.sid !== id),
-      }))),
+      addStudents: (list, classId) => set((s) => ({
+        classes: s.classes.map((c) => (c.id !== (classId || s.activeId) ? c : {
+          ...c, students: [...c.students, ...list.map((p, i) => makeStudent(p, c.students.length + i))],
+        })),
+      })),
+      // Student edits work in whichever class the student is in.
+      updateStudent: (id, p) => set((s) => ({
+        classes: s.classes.map((c) => (!c.students.some((st) => st.id === id) ? c : {
+          ...c, students: c.students.map((st) => (st.id === id ? { ...st, ...p } : st)),
+        })),
+      })),
+      removeStudent: (id) => get().removeStudents([id]),
+      removeStudents: (ids) => set((s) => ({
+        classes: s.classes.map((c) => {
+          if (!c.students.some((st) => ids.includes(st.id))) return c;
+          return {
+            ...c,
+            students: c.students.filter((st) => !ids.includes(st.id)),
+            logs: c.logs.filter((l) => !ids.includes(l.sid)),
+            quran: Object.fromEntries(Object.entries(c.quran).filter(([sid]) => !ids.includes(sid))),
+            attendance: Object.fromEntries(Object.entries(c.attendance).map(([d, day]) => [d, Object.fromEntries(Object.entries(day).filter(([sid]) => !ids.includes(sid)))])),
+          };
+        }),
+        popcorn: { ...s.popcorn, used: Object.fromEntries(Object.entries(s.popcorn.used).map(([k, v]) => [k, v.filter((id) => !ids.includes(id))])) },
+      })),
+      moveStudents: (ids, toClassId) => set((s) => {
+        const movers = s.classes.flatMap((c) => (c.id === toClassId ? [] : c.students.filter((st) => ids.includes(st.id)).map((st) => ({ st, from: c }))));
+        if (!movers.length) return {};
+        const moving = movers.map((m) => m.st.id);
+        return {
+          classes: s.classes.map((c) => {
+            if (c.id === toClassId) {
+              const att = { ...c.attendance };
+              const quran = { ...c.quran };
+              movers.forEach(({ st, from }) => {
+                if (from.quran[st.id]) quran[st.id] = from.quran[st.id];
+                Object.entries(from.attendance).forEach(([d, day]) => { if (day[st.id]) att[d] = { ...(att[d] || {}), [st.id]: day[st.id] }; });
+              });
+              const logs = movers.flatMap(({ st, from }) => from.logs.filter((l) => l.sid === st.id));
+              return {
+                ...c,
+                students: [...c.students, ...movers.map(({ st }) => ({ ...st, teamId: null }))],
+                logs: [...logs, ...c.logs].sort((a, b) => b.at - a.at).slice(0, 6000),
+                quran, attendance: att,
+              };
+            }
+            if (!c.students.some((st) => moving.includes(st.id))) return c;
+            return {
+              ...c,
+              students: c.students.filter((st) => !moving.includes(st.id)),
+              logs: c.logs.filter((l) => !moving.includes(l.sid)),
+              quran: Object.fromEntries(Object.entries(c.quran).filter(([sid]) => !moving.includes(sid))),
+              attendance: Object.fromEntries(Object.entries(c.attendance).map(([d, day]) => [d, Object.fromEntries(Object.entries(day).filter(([sid]) => !moving.includes(sid)))])),
+            };
+          }),
+        };
+      }),
 
       // Points always go to the class each student belongs to (they may come from several classes, e.g. the popcorn machine).
       award: (sids, b, kind = 'behavior') => {

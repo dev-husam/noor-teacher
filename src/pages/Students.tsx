@@ -52,6 +52,7 @@ export default function Students() {
           <Seg value={sort} onChange={setSort} options={[{ v: 'added', label: '🕐 الترتيب' }, { v: 'name', label: '🔤 الاسم' }, { v: 'points', label: '⭐ النقاط' }]} />
           <div className="spacer" />
           <button className="btn sm ghost" onClick={() => setAdding('bulk')}>📋 إضافة قائمة أسماء</button>
+          <button className="btn sm" onClick={() => useUI.getState().go('manage', 'students')}>🗂️ إدارة الطلاب</button>
         </div>
       )}
 
