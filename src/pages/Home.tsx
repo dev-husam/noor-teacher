@@ -4,6 +4,7 @@ import { Mascot, MosqueScene } from '../components/Decor';
 import { AwardModal, ProfileModal } from '../components/students';
 import { Avatar, Empty, fadeUp, useUI } from '../components/ui';
 import { HADITHS, VERSES } from '../data/islamic';
+import ClassGoalCard from '../components/ClassGoal';
 import { gregToday, hijriToday, timeAgo, useNum, useT } from '../i18n';
 import { burst } from '../lib/fx';
 import { sfx } from '../lib/sound';
@@ -51,6 +52,8 @@ export default function Home() {
     { e: '🔔', l: t('انتباه!'), c: '#EC4899', on: () => go('tools', 'signals') },
     { e: '🌟', l: t('الصف كاملًا'), c: '#F59E0B', on: () => setAward(presentIds(c)) },
     { e: '❓', l: 'مسابقة', c: '#10B981', on: () => go('games', 'quiz') },
+    { e: '⚡', l: 'صح أم خطأ', c: '#EF4444', on: () => go('games', 'truefalse') },
+    { e: '📜', l: 'شهادة تقدير', c: '#A16207', on: () => go('rewards', 'certs') },
     { e: '📖', l: 'تسميع', c: '#14B8A6', on: () => go('quran') },
   ];
 
@@ -113,6 +116,9 @@ export default function Home() {
           </motion.button>
         ))}
       </div>
+
+      {/* CLASS GOAL */}
+      {c.students.length > 0 && <ClassGoalCard compact />}
 
       {/* QUICK ACTIONS */}
       <motion.div className="card" variants={fadeUp} custom={4} initial="hidden" animate="show">

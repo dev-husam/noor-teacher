@@ -1,25 +1,32 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar, Empty, Modal, Seg, useUI } from '../components/ui';
 import { LEVELS, Reward, levelOf } from '../data/islamic';
 import { useNum, useT } from '../i18n';
 import { burst } from '../lib/fx';
 import { sfx } from '../lib/sound';
 import { badgesFor, useClass, useStore } from '../store';
+import ClassGoalCard from '../components/ClassGoal';
+import CertificateMaker from '../components/Certificate';
 
 export default function Rewards() {
   const t = useT();
-  const [tab, setTab] = useState<'store' | 'badges' | 'levels'>('store');
+  type Tab = 'store' | 'goal' | 'certs' | 'badges' | 'levels';
+  const sub = useUI((s) => s.sub) as Tab | null;
+  const [tab, setTab] = useState<Tab>(sub || 'store');
+  useEffect(() => { if (sub) setTab(sub); }, [sub]);
   return (
     <div>
       <div className="topbar">
         <div><h1>🎁 {t('المكافآت')}</h1><div className="sub">يستبدل الطلاب نقاطهم بمكافآت محبّبة</div></div>
       </div>
       <div className="tabs">
-        <Seg value={tab} onChange={setTab} options={[{ v: 'store', label: `🛍️ ${t('المتجر')}` }, { v: 'badges', label: `🏅 ${t('الأوسمة')}` }, { v: 'levels', label: '🌱 المستويات' }]} />
+        <Seg value={tab} onChange={setTab} options={[{ v: 'store', label: `🛍️ ${t('المتجر')}` }, { v: 'goal', label: '🎯 هدف الصف' }, { v: 'certs', label: '📜 الشهادات' }, { v: 'badges', label: `🏅 ${t('الأوسمة')}` }, { v: 'levels', label: '🌱 المستويات' }]} />
       </div>
         <motion.div key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.2 }}>
           {tab === 'store' && <Store />}
+          {tab === 'goal' && <ClassGoalCard />}
+          {tab === 'certs' && <CertificateMaker />}
           {tab === 'badges' && <Badges />}
           {tab === 'levels' && <Levels />}
         </motion.div>

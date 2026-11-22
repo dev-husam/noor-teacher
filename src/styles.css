@@ -408,3 +408,11 @@ table.t th.sticky { z-index: 4; background: var(--surface-2); }
   .main .btn { white-space: normal; text-align: center; line-height: 1.25; }
   .main { padding-inline: 12px; }
 }
+
+/* ───────── Certificate printing ───────── */
+.cert-print { display: none; }
+@media print {
+  body.print-cert > *:not(.cert-print) { display: none !important; }
+  body.print-cert .cert-print { display: block; }
+  body.print-cert .cert-print img { width: 100%; height: auto; }
+}

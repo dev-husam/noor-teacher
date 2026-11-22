@@ -19,7 +19,10 @@ export type ClassRoom = {
   students: Student[]; teams: Team[]; logs: Log[];
   attendance: Record<string, Record<string, AttStatus>>;
   quran: Record<string, Record<number, number>>;
+  /** Shared class target: points the whole class collects together since `since`. */
+  goal?: ClassGoal | null;
 };
+export type ClassGoal = { title: string; emoji: string; target: number; since: number; celebrated?: boolean };
 export type Settings = {
   teacherName: string; lang: 'ar' | 'en'; sound: boolean; theme: 'system' | 'light' | 'dark';
   arabicDigits: boolean; onboarded: boolean; allowNegative: boolean;
@@ -54,6 +57,7 @@ type State = {
   updateClass: (id: string, p: Partial<Pick<ClassRoom, 'name' | 'emoji'>>) => void;
   deleteClass: (id: string) => void;
   setActive: (id: string) => void;
+  setGoal: (g: ClassGoal | null) => void;
   // students
   addStudents: (list: (Partial<Student> & { name: string })[]) => void;
   updateStudent: (id: string, p: Partial<Student>) => void;
@@ -93,12 +97,12 @@ const patchActive = (s: State, fn: (c: ClassRoom) => ClassRoom) => ({
 });
 
 // ───────── Popcorn machine (random picker) ─────────
-export type PopcornPrefs = { winners: 1 | 2 | 3 | 5; speed: 'slow' | 'normal' | 'fast'; noRepeat: boolean; autoCelebrate: boolean; music: boolean };
+export type PopcornPrefs = { scope: 'all' | 'class'; winners: 1 | 2 | 3 | 5; speed: 'slow' | 'normal' | 'fast'; noRepeat: boolean; autoCelebrate: boolean; music: boolean };
 export type PopcornDraw = { ids: string[]; at: number };
 /** Per-class popcorn state: who was already picked this round, and the winners log. */
 export type PopcornData = { prefs: PopcornPrefs; used: Record<string, string[]>; history: Record<string, PopcornDraw[]> };
 export const POPCORN_DEFAULTS: PopcornData = {
-  prefs: { winners: 1, speed: 'normal', noRepeat: true, autoCelebrate: true, music: false },
+  prefs: { scope: 'all', winners: 1, speed: 'normal', noRepeat: true, autoCelebrate: true, music: false },
   used: {}, history: {},
 };
 
@@ -125,6 +129,7 @@ export const useStore = create<State>()(
         const c = newClass(name, emoji);
         return { classes: [...s.classes, c], activeId: c.id };
       }),
+      setGoal: (g) => set((s) => patchActive(s, (c) => ({ ...c, goal: g }))),
       updateClass: (id, p) => set((s) => ({ classes: s.classes.map((c) => (c.id === id ? { ...c, ...p } : c)) })),
       deleteClass: (id) => set((s) => {
         let classes = s.classes.filter((c) => c.id !== id);
@@ -143,43 +148,55 @@ export const useStore = create<State>()(
         ...c, students: c.students.filter((st) => st.id !== id), logs: c.logs.filter((l) => l.sid !== id),
       }))),
 
+      // Points always go to the class each student belongs to (they may come from several classes, e.g. the popcorn machine).
       award: (sids, b, kind = 'behavior') => {
         const allowNeg = get().settings.allowNegative;
         const at = Date.now();
-        const c0 = get().classes.find((x) => x.id === get().activeId)!;
-        const logs: Log[] = sids.map((sid) => {
-          const st = c0.students.find((x) => x.id === sid);
-          const cur = st?.points ?? 0;
+        const byClass = new Map<string, Log[]>();
+        for (const sid of sids) {
+          const cl = get().classes.find((x) => x.id === get().activeId && x.students.some((st) => st.id === sid))
+            || get().classes.find((x) => x.students.some((st) => st.id === sid));
+          if (!cl) continue;
+          const cur = cl.students.find((x) => x.id === sid)!.points;
           const next = allowNeg ? cur + b.value : Math.max(0, cur + b.value);
-          return { id: uid(), sid, label: b.label, emoji: b.emoji, value: b.value, at, kind, bid: b.bid, applied: next - cur };
-        });
-        set((s) => patchActive(s, (c) => ({
-          ...c,
-          logs: [...logs, ...c.logs].slice(0, 6000),
-          students: c.students.map((st) => {
-            const l = logs.find((x) => x.sid === st.id);
-            if (!l) return st;
-            return { ...st, points: st.points + (l.applied ?? l.value), earned: st.earned + Math.max(0, b.value) };
+          byClass.set(cl.id, [...(byClass.get(cl.id) || []), { id: uid(), sid, label: b.label, emoji: b.emoji, value: b.value, at, kind, bid: b.bid, applied: next - cur }]);
+        }
+        set((s) => ({
+          classes: s.classes.map((c) => {
+            const logs = byClass.get(c.id);
+            if (!logs) return c;
+            return {
+              ...c,
+              logs: [...logs, ...c.logs].slice(0, 6000),
+              students: c.students.map((st) => {
+                const l = logs.find((x) => x.sid === st.id);
+                if (!l) return st;
+                return { ...st, points: st.points + (l.applied ?? l.value), earned: st.earned + Math.max(0, b.value) };
+              }),
+            };
           }),
-        })));
-        return logs.map((l) => l.id);
+        }));
+        return [...byClass.values()].flat().map((l) => l.id);
       },
-      undo: (ids) => set((s) => patchActive(s, (c) => {
-        const removed = c.logs.filter((l) => ids.includes(l.id));
-        return {
-          ...c,
-          logs: c.logs.filter((l) => !ids.includes(l.id)),
-          students: c.students.map((st) => {
-            const mine = removed.filter((l) => l.sid === st.id);
-            if (!mine.length) return st;
-            let points = st.points, earned = st.earned;
-            mine.forEach((l) => {
-              points -= l.applied ?? l.value;
-              if (l.value > 0 && l.kind !== 'redeem') earned -= l.value;
-            });
-            return { ...st, points: Math.max(0, points), earned: Math.max(0, earned) };
-          }),
-        };
+      undo: (ids) => set((s) => ({
+        classes: s.classes.map((c) => {
+          const removed = c.logs.filter((l) => ids.includes(l.id));
+          if (!removed.length) return c;
+          return {
+            ...c,
+            logs: c.logs.filter((l) => !ids.includes(l.id)),
+            students: c.students.map((st) => {
+              const mine = removed.filter((l) => l.sid === st.id);
+              if (!mine.length) return st;
+              let points = st.points, earned = st.earned;
+              mine.forEach((l) => {
+                points -= l.applied ?? l.value;
+                if (l.value > 0 && l.kind !== 'redeem') earned -= l.value;
+              });
+              return { ...st, points: Math.max(0, points), earned: Math.max(0, earned) };
+            }),
+          };
+        }),
       })),
       resetPoints: () => set((s) => patchActive(s, (c) => ({
         ...c, logs: [], students: c.students.map((st) => ({ ...st, points: 0, earned: 0 })), teams: c.teams.map((t) => ({ ...t, bonus: 0 })),
@@ -293,6 +310,13 @@ export const pointsSince = (c: ClassRoom, since: number) => {
   const m: Record<string, number> = {};
   c.logs.forEach((l) => { if (l.at >= since && l.kind !== 'redeem') m[l.sid] = (m[l.sid] || 0) + l.value; });
   return m;
+};
+
+/** Points the class collected together since the goal started (redemptions don't count against it). */
+export const goalProgress = (c: ClassRoom) => {
+  if (!c.goal) return 0;
+  const since = c.goal.since;
+  return Math.max(0, c.logs.reduce((n, l) => (l.at >= since && l.kind !== 'redeem' ? n + l.value : n), 0));
 };
 
 export const startOfDay = (d = new Date()) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); };

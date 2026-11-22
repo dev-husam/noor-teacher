@@ -8,8 +8,9 @@ import { useNum, useT } from '../i18n';
 import { burst, celebrate } from '../lib/fx';
 import { sfx } from '../lib/sound';
 import { presentIds, useClass, useStore } from '../store';
+import { CompleteVerse, TrueFalse, WhoAmI, WordBuilder } from './games/MoreGames';
 
-type Tab = 'quiz' | 'memory' | 'order';
+type Tab = 'quiz' | 'truefalse' | 'verse' | 'word' | 'whoami' | 'memory' | 'order';
 const shuffle = <T,>(a: T[]) => [...a].sort(() => Math.random() - 0.5);
 
 export default function Games() {
@@ -23,10 +24,18 @@ export default function Games() {
         <div><h1>🎮 {t('الألعاب')} التعليمية</h1><div className="sub">تعلّم ممتع يكسب فيه الطلاب نقاطًا</div></div>
       </div>
       <div className="tabs">
-        <Seg value={tab} onChange={setTab} options={[{ v: 'quiz', label: '❓ المسابقة' }, { v: 'memory', label: '🃏 لعبة الذاكرة' }, { v: 'order', label: '🧩 رتّب الخطوات' }]} />
+        <Seg value={tab} onChange={setTab} options={[
+          { v: 'quiz', label: '❓ المسابقة' }, { v: 'truefalse', label: '⚡ صح أم خطأ' }, { v: 'verse', label: '📖 أكمل الآية' },
+          { v: 'word', label: '🔤 ركّب الكلمة' }, { v: 'whoami', label: '🕵️ من أنا؟' },
+          { v: 'memory', label: '🃏 لعبة الذاكرة' }, { v: 'order', label: '🧩 رتّب الخطوات' },
+        ]} />
       </div>
         <motion.div key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.2 }}>
           {tab === 'quiz' && <Quiz />}
+          {tab === 'truefalse' && <TrueFalse />}
+          {tab === 'verse' && <CompleteVerse />}
+          {tab === 'word' && <WordBuilder />}
+          {tab === 'whoami' && <WhoAmI />}
           {tab === 'memory' && <Memory />}
           {tab === 'order' && <Order />}
         </motion.div>

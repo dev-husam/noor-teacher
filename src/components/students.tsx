@@ -7,6 +7,7 @@ import { sfx } from '../lib/sound';
 import { Student, attendanceRate, badgesFor, quranCount, todayKey, useClass, useStore } from '../store';
 import { Avatar, Modal, Seg, askConfirm, useUI } from './ui';
 import { CAN_PRINT, copyText } from '../lib/platform';
+import CertificateMaker from './Certificate';
 
 // ───────── Award hook: sound + floaters + confetti + undo toast + level-up ─────────
 export function useAward() {
@@ -17,8 +18,8 @@ export function useAward() {
   const num = useNum();
   return (sids: string[], b: { label: string; emoji: string; value: number; bid?: string }, origin?: Element | null, kind: any = 'behavior') => {
     if (!sids.length) return;
-    const c = useStore.getState().classes.find((x) => x.id === useStore.getState().activeId)!;
-    const before = Object.fromEntries(c.students.map((s) => [s.id, levelOf(s.earned).index]));
+    const everyone = () => useStore.getState().classes.flatMap((x) => x.students);
+    const before = Object.fromEntries(everyone().map((s) => [s.id, levelOf(s.earned).index]));
     const ids = award(sids, b, kind);
     const pos = b.value > 0;
     pos ? sfx.plus() : sfx.minus();
@@ -33,9 +34,8 @@ export function useAward() {
       const o = fromEl(sids.length === 1 ? document.querySelector(`[data-sid="${sids[0]}"]`) || origin || null : null);
       sids.length > 3 ? burst(0.5, 0.5, 1.6) : stars(o.x, o.y);
     }
-    const after = useStore.getState().classes.find((x) => x.id === c.id)!;
-    const up = after.students.filter((s) => sids.includes(s.id) && levelOf(s.earned).index > before[s.id]);
-    const who = sids.length === 1 ? c.students.find((s) => s.id === sids[0])?.name : `${num(sids.length)} ${lang === 'ar' ? 'طلاب' : 'students'}`;
+    const up = everyone().filter((s) => sids.includes(s.id) && levelOf(s.earned).index > before[s.id]);
+    const who = sids.length === 1 ? everyone().find((s) => s.id === sids[0])?.name : `${num(sids.length)} ${lang === 'ar' ? 'طلاب' : 'students'}`;
     toast(`${b.emoji} ${who}: ${pos ? '+' : ''}${num(b.value)} — ${b.label}${pos && sids.length === 1 ? ' · ' + PRAISE[Math.floor(Math.random() * PRAISE.length)] : ''}`, () => { undo(ids); sfx.whoosh(); });
     if (up.length) {
       setTimeout(() => {
@@ -199,6 +199,7 @@ export function ProfileModal({ sid, onClose }: { sid: string | null; onClose: ()
   const c = useClass();
   const s = c.students.find((x) => x.id === sid);
   const [tab, setTab] = useState<'over' | 'log' | 'quran' | 'edit'>('over');
+  const [cert, setCert] = useState(false);
   const { updateStudent, removeStudent, setQuran, undo } = useStore();
   const lang = useStore((x) => x.settings.lang);
   const teacher = useStore((x) => x.settings.teacherName);
@@ -273,6 +274,7 @@ export function ProfileModal({ sid, onClose }: { sid: string | null; onClose: ()
                 </div>
               )}
               <div className="row wrap no-print">
+                <button className="btn gold" onClick={() => setCert(true)}>📜 شهادة تقدير</button>
                 {CAN_PRINT && <button className="btn soft" onClick={() => window.print()}>🖨️ طباعة التقرير</button>}
                 {wa ? <a className="btn" style={{ background: '#25D366', color: '#fff', border: 0, textDecoration: 'none' }} href={wa} target="_blank" rel="noreferrer">💬 إرسال لولي الأمر</a>
                   : <button className="btn" onClick={async () => { useUI.getState().toast(await copyText(report) ? '📋 نُسخ التقرير — أضف رقم ولي الأمر للإرسال المباشر' : '⚠️ تعذّر النسخ — حاول مرة أخرى'); }}>📋 نسخ تقرير ولي الأمر</button>}
@@ -320,6 +322,9 @@ export function ProfileModal({ sid, onClose }: { sid: string | null; onClose: ()
             </div>
           )}
         </motion.div>
+      <Modal open={cert} onClose={() => setCert(false)} wide title={`شهادة تقدير — ${s.name}`} icon="📜">
+        {cert && <CertificateMaker sid={s.id} />}
+      </Modal>
     </Modal>
   );
 }

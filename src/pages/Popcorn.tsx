@@ -20,12 +20,19 @@ export default function Popcorn() {
   const toast = useUI((s) => s.toast);
   const go = useUI((s) => s.go);
   const prefs = useStore((s) => s.popcorn.prefs);
-  const used = useStore((s) => s.popcorn.used[c.id]) || [];
-  const history = useStore((s) => s.popcorn.history[c.id]) || [];
+  const allClasses = useStore((s) => s.classes);
+  const scopeAll = useStore((s) => s.popcorn.prefs.scope) !== 'class';
+  /** Draw state is kept per class, or once for the whole of Noor. */
+  const key = scopeAll ? '__all__' : c.id;
+  const used = useStore((s) => s.popcorn.used[key]) || [];
+  const history = useStore((s) => s.popcorn.history[key]) || [];
   const { setPopcornPrefs, setPopcornUsed, logPopcorn, clearPopcornHistory } = useStore.getState();
 
-  const present = presentIds(c);
-  const players = c.students.filter((s) => present.includes(s.id));
+  const sources = scopeAll ? allClasses : [c];
+  const everyone = sources.flatMap((cl) => cl.students);
+  // students marked absent today in their own class stay out of the draw
+  const players = sources.flatMap((cl) => { const p = presentIds(cl); return cl.students.filter((s) => p.includes(s.id)); });
+  const classOf = (id: string) => allClasses.find((cl) => cl.students.some((s) => s.id === id));
   const remaining = prefs.noRepeat ? players.filter((s) => !used.includes(s.id)).length : players.length;
 
   const [busy, setBusy] = useState(false);
@@ -88,9 +95,9 @@ export default function Popcorn() {
       chosen = chosen.concat(extra); reset = true;
       nextUsed = prefs.noRepeat ? extra.map((s) => s.id) : [];
     } else if (prefs.noRepeat) nextUsed = nextUsed.concat(chosen.map((s) => s.id));
-    if (prefs.noRepeat) setPopcornUsed(c.id, nextUsed);
+    if (prefs.noRepeat) setPopcornUsed(key, nextUsed);
     if (n < prefs.winners) toast(`عدد الطلاب أقل من ${num(prefs.winners)} — تم اختيار ${num(n)}`);
-    logPopcorn(c.id, chosen.map((s) => s.id));
+    logPopcorn(key, chosen.map((s) => s.id));
     return { chosen, reset };
   };
 
@@ -237,8 +244,8 @@ export default function Popcorn() {
   const again = () => { closeWinner(); setTimeout(() => startDraw(), 60); };
 
   // ───── render ─────
-  if (!c.students.length) {
-    return <div className="card"><Empty emoji="🍿" title="ماكينة الفشار فاضية!" text="أضف أسماء الطلاب أولًا لنختار نجم اليوم" action={<button className="btn primary" onClick={() => go('students')}>👦 إضافة الطلاب</button>} /></div>;
+  if (!everyone.length) {
+    return <div className="card"><Empty emoji="🍿" title="ماكينة الفشار فاضية!" text="أضف الطلاب في قسم «الطلاب» وستجدهم هنا تلقائيًا" action={<button className="btn primary" onClick={() => go('students')}>👦 إضافة الطلاب</button>} /></div>;
   }
   const longest = winners ? Math.max(...winners.map((s) => s.name.length)) : 0;
   const multi = (winners?.length || 0) > 1;
@@ -246,7 +253,7 @@ export default function Popcorn() {
   const base = multi ? clamp(vw / 16, 22, 46) : clamp(vw / 11, 30, 66);
   const fsName = Math.round(clamp(base * (longest > 12 ? 12 / longest + 0.25 : 1), 22, 66));
   const setP = (p: Partial<PopcornPrefs>) => setPopcornPrefs(p);
-  const nameOf = (id: string) => c.students.find((s) => s.id === id);
+  const nameOf = (id: string) => allClasses.flatMap((cl) => cl.students).find((s) => s.id === id);
   const fmt = (t: number) => { try { return new Intl.DateTimeFormat(useStore.getState().settings.lang === 'en' ? 'en' : 'ar', { hour: 'numeric', minute: '2-digit', day: 'numeric', month: 'short' }).format(t); } catch { return new Date(t).toLocaleString(); } };
 
   return (
@@ -269,7 +276,8 @@ export default function Popcorn() {
             </div>
             <p className="pop-remain">
               👥 {prefs.noRepeat ? <>بقي في السحب {num(remaining)} من {num(players.length)}</> : <>{num(players.length)} طالبًا في السحب</>}
-              {players.length < c.students.length && <> · الغائبون لا يدخلون</>}
+              {players.length < everyone.length && <> · الغائبون لا يدخلون</>}
+              {scopeAll && allClasses.length > 1 && <> · من {num(allClasses.length)} صفوف</>}
             </p>
           </>
         ) : (
@@ -285,6 +293,10 @@ export default function Popcorn() {
       <div className="col" style={{ gap: 16 }}>
         <div className="card">
           <div className="card-title">⚙️ إعدادات الماكينة</div>
+          <div className="setting-row">
+            <div style={{ flex: 1 }}><div className="t">👥 من يدخل السحب؟</div><div className="d">{scopeAll ? 'كل طلاب نور من جميع الصفوف' : `طلاب «${c.name}» فقط`}</div></div>
+            <Seg value={prefs.scope} onChange={(v) => setP({ scope: v })} options={[{ v: 'all', label: '🌍 كل الطلاب' }, { v: 'class', label: '🏫 الصف الحالي' }]} />
+          </div>
           <div className="setting-row">
             <div style={{ flex: 1 }}><div className="t">🏆 عدد الفائزين</div></div>
             <Seg value={String(prefs.winners)} onChange={(v) => setP({ winners: Number(v) as PopcornPrefs['winners'] })}
@@ -310,7 +322,7 @@ export default function Popcorn() {
           {prefs.noRepeat && (
             <div className="setting-row">
               <div style={{ flex: 1 }}><div className="t">🔄 جولة جديدة</div><div className="d">يعيد جميع الطلاب إلى السحب (لا يحذف السجل)</div></div>
-              <button className="btn sm" disabled={busy || !used.length} onClick={() => { setPopcornUsed(c.id, []); toast('🔄 عاد الجميع إلى السحب'); }}>🔄 إعادة</button>
+              <button className="btn sm" disabled={busy || !used.length} onClick={() => { setPopcornUsed(key, []); toast('🔄 عاد الجميع إلى السحب'); }}>🔄 إعادة</button>
             </div>
           )}
         </div>
@@ -319,7 +331,7 @@ export default function Popcorn() {
           <div className="row" style={{ marginBottom: 10 }}>
             <div className="card-title" style={{ margin: 0, flex: 1 }}>📜 سجل الفائزين</div>
             {history.length > 0 && (
-              <button className="btn sm danger" disabled={busy} onClick={async () => { if (await askConfirm('مسح سجل الفائزين لهذا الصف؟', '🗑️ مسح')) clearPopcornHistory(c.id); }}>🗑️ مسح</button>
+              <button className="btn sm danger" disabled={busy} onClick={async () => { if (await askConfirm('مسح سجل الفائزين؟', '🗑️ مسح')) clearPopcornHistory(key); }}>🗑️ مسح</button>
             )}
           </div>
           {!history.length ? <p className="muted">لم يُختر أحد بعد — اضغط «ابدأ المفاجأة!»</p> : (
@@ -359,7 +371,8 @@ export default function Popcorn() {
               <div className={`pop-wnames pop-rv ${stage >= 3 ? 'in' : ''}`}>
                 {winners.map((s) => (
                   <div key={s.id} className="pop-wname" style={{ ['--fs' as any]: `${fsName}px` }}>
-                    <Avatar s={s} size={Math.round(fsName * 1.15)} ring={false} />{s.name}
+                    <Avatar s={s} size={Math.round(fsName * 1.15)} ring={false} />
+                    <span>{s.name}{scopeAll && allClasses.length > 1 && <small style={{ display: 'block', fontSize: '.36em', opacity: .9 }}>{classOf(s.id)?.emoji} {classOf(s.id)?.name}</small>}</span>
                   </div>
                 ))}
               </div>
