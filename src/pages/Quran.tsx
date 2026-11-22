@@ -31,13 +31,11 @@ export default function Quran() {
           <div className="tabs">
             <Seg value={tab} onChange={setTab} options={[{ v: 'session', label: '🎙️ جلسة تسميع' }, { v: 'board', label: '🗂️ لوحة الحفظ' }, { v: 'surahs', label: '📊 تقدّم السور' }]} />
           </div>
-          <AnimatePresence mode="wait">
             <motion.div key={tab} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.2 }}>
               {tab === 'session' && <Session />}
               {tab === 'board' && <Board />}
               {tab === 'surahs' && <SurahProgress />}
             </motion.div>
-          </AnimatePresence>
         </>
       )}
     </div>

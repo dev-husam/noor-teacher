@@ -87,11 +87,9 @@ export default function App() {
             <ClassSwitcher compact />
           </header>
           <main className="main">
-            <AnimatePresence mode="wait">
-              <motion.div key={page} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0, transitionEnd: { transform: 'none' } }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
-                <Cur />
-              </motion.div>
-            </AnimatePresence>
+            <motion.div key={page} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0, transitionEnd: { transform: 'none' } }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+              <Cur />
+            </motion.div>
           </main>
         </div>
 

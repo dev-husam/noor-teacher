@@ -60,7 +60,6 @@ export function BehaviorGrid({ onPick }: { onPick: (b: Behavior, el: Element) =>
       <div className="row wrap" style={{ marginBottom: 14 }}>
         <Seg value={tab} onChange={setTab} options={[{ v: 'pos', label: <>💚 {t('سلوك إيجابي')}</> }, { v: 'neg', label: <>🌱 {t('يحتاج تحسين')}</> }]} />
       </div>
-      <AnimatePresence mode="wait">
         <motion.div key={tab} className="bgrid" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.18 }}>
           {list.map((b, i) => (
             <motion.button key={b.id} className={`bbtn ${b.value > 0 ? 'pos' : 'neg'}`}
@@ -72,7 +71,6 @@ export function BehaviorGrid({ onPick }: { onPick: (b: Behavior, el: Element) =>
             </motion.button>
           ))}
         </motion.div>
-      </AnimatePresence>
       {tab === 'pos' && (
         <div className="row wrap" style={{ marginTop: 14, padding: 12, borderRadius: 16, background: 'var(--gold-soft)' }}>
           <b>✨ نقاط مخصّصة</b>
@@ -222,7 +220,6 @@ export function ProfileModal({ sid, onClose }: { sid: string | null; onClose: ()
           { v: 'over', label: '🌟 نظرة عامة' }, { v: 'log', label: '📜 السجل' }, { v: 'quran', label: '📖 الحفظ' }, { v: 'edit', label: '✏️ البيانات' },
         ]} />
       </div>
-      <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.18 }}>
           {tab === 'over' && (
             <div className="col" style={{ gap: 16 }}>
@@ -323,7 +320,6 @@ export function ProfileModal({ sid, onClose }: { sid: string | null; onClose: ()
             </div>
           )}
         </motion.div>
-      </AnimatePresence>
     </Modal>
   );
 }

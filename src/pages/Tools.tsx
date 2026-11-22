@@ -33,7 +33,6 @@ export default function Tools() {
           { v: 'groups', label: <>👥 {t('المجموعات')}</> },
         ]} />
       </div>
-      <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.2 }}>
           {tab === 'popcorn' && <Popcorn />}
           {tab === 'wheel' && <Wheel />}
@@ -42,7 +41,6 @@ export default function Tools() {
           {tab === 'noise' && <Noise />}
           {tab === 'groups' && <Groups />}
         </motion.div>
-      </AnimatePresence>
     </div>
   );
 }

@@ -25,13 +25,11 @@ export default function Games() {
       <div className="tabs">
         <Seg value={tab} onChange={setTab} options={[{ v: 'quiz', label: '❓ المسابقة' }, { v: 'memory', label: '🃏 لعبة الذاكرة' }, { v: 'order', label: '🧩 رتّب الخطوات' }]} />
       </div>
-      <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.2 }}>
           {tab === 'quiz' && <Quiz />}
           {tab === 'memory' && <Memory />}
           {tab === 'order' && <Order />}
         </motion.div>
-      </AnimatePresence>
     </div>
   );
 }
@@ -160,12 +158,10 @@ function Quiz() {
           {team && <><span style={{ fontSize: 36 }}>{team.emoji}</span><b style={{ fontSize: 20, color: team.color }}>دور فريق {team.name}</b></>}
         </motion.div>
       )}
-      <AnimatePresence mode="wait">
         <motion.div key={i} className="card center" style={{ padding: '36px 20px', minHeight: 150 }}
           initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} exit={{ rotateY: -90, opacity: 0 }} transition={{ duration: 0.35 }}>
           <h2 style={{ fontSize: 'clamp(24px, 4vw, 36px)' }}>{q.q}</h2>
         </motion.div>
-      </AnimatePresence>
       <div className="grid ans-grid" style={{ gap: 12 }}>
         {q.order.map((ai, k) => {
           const isC = ai === q.c, isP = ai === picked;

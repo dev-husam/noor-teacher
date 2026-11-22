@@ -17,13 +17,11 @@ export default function Learn() {
       <div className="tabs">
         <Seg value={tab} onChange={setTab} options={[{ v: 'duas', label: '🤲 أدعية يومية' }, { v: 'names', label: '✨ أسماء الله الحسنى' }, { v: 'wisdom', label: '📜 آيات وأحاديث' }]} />
       </div>
-      <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.2 }}>
           {tab === 'duas' && <Duas />}
           {tab === 'names' && <Names />}
           {tab === 'wisdom' && <Wisdom />}
         </motion.div>
-      </AnimatePresence>
     </div>
   );
 }

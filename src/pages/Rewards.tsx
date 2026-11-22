@@ -18,13 +18,11 @@ export default function Rewards() {
       <div className="tabs">
         <Seg value={tab} onChange={setTab} options={[{ v: 'store', label: `🛍️ ${t('المتجر')}` }, { v: 'badges', label: `🏅 ${t('الأوسمة')}` }, { v: 'levels', label: '🌱 المستويات' }]} />
       </div>
-      <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.2 }}>
           {tab === 'store' && <Store />}
           {tab === 'badges' && <Badges />}
           {tab === 'levels' && <Levels />}
         </motion.div>
-      </AnimatePresence>
     </div>
   );
 }
