@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { deviceStorage } from './lib/storage';
 import {
   AVATARS, Behavior, COLORS, DEFAULT_BEHAVIORS, DEFAULT_REWARDS, DEMO_NAMES, Reward, SURAHS, TEAM_PRESETS,
 } from './data/islamic';
@@ -244,7 +245,7 @@ export const useStore = create<State>()(
         set({ classes: [c], activeId: c.id, behaviors: DEFAULT_BEHAVIORS, rewards: DEFAULT_REWARDS, settings: { ...get().settings, onboarded: false } });
       },
     }),
-    { name: 'noor-teacher-v1' },
+    { name: 'noor-teacher-v1', storage: createJSONStorage(() => deviceStorage) },
   ),
 );
 

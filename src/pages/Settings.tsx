@@ -1,8 +1,9 @@
 import { motion } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Logo, Mascot } from '../components/Decor';
 import { Modal, Seg, Switch, askConfirm, useUI } from '../components/ui';
 import { saveFile } from '../lib/platform';
+import { StorageInfo, getStorageInfo, requestPersistentStorage, wipeDeviceData } from '../lib/storage';
 import { Behavior, Reward } from '../data/islamic';
 import { useNum, useT } from '../i18n';
 import { sfx } from '../lib/sound';
@@ -18,6 +19,19 @@ export default function Settings() {
   const file = useRef<HTMLInputElement>(null);
   const [editClass, setEditClass] = useState<{ id?: string; name: string; emoji: string } | null>(null);
   const toast = useUI((s) => s.toast);
+  const [storage, setStorage] = useState<StorageInfo | null>(null);
+  useEffect(() => { getStorageInfo().then(setStorage); }, [st.classes]);
+
+  const protectData = async () => {
+    const ok = await requestPersistentStorage();
+    setStorage(await getStorageInfo());
+    toast(ok ? '🔒 بياناتك محميّة على هذا الجهاز' : 'لم يسمح المتصفح بالحماية — ثبّت التطبيق أو خذ نسخة احتياطية');
+  };
+  const eraseEverything = async () => {
+    if (!(await askConfirm('مسح كل البيانات من هذا الجهاز: الصفوف والطلاب والنقاط والحضور والحفظ والإعدادات. لا يمكن التراجع — ننصح بتصدير نسخة احتياطية أولًا.', '🗑️ مسح كل شيء'))) return;
+    await wipeDeviceData();
+    location.reload();
+  };
 
   const exportData = async () => {
     const { classes, activeId, behaviors, rewards, settings } = useStore.getState();
@@ -72,7 +86,16 @@ export default function Settings() {
           </div>
           <div className="card">
             <div className="card-title">💾 البيانات</div>
-            <p className="muted" style={{ fontSize: 13.5, marginBottom: 12 }}>تُحفظ بياناتك على هذا الجهاز فقط. خذ نسخة احتياطية بانتظام لنقلها لجهاز آخر.</p>
+            <p className="muted" style={{ fontSize: 13.5, marginBottom: 10 }}>تُحفظ بياناتك تلقائيًا على هذا الجهاز فقط — بدون إنترنت أو قاعدة بيانات خارجية — وتجدها كما تركتها عند عودتك. خذ نسخة احتياطية لنقلها لجهاز آخر.</p>
+            {storage && (
+              <div className="row wrap" style={{ gap: 8, marginBottom: 12 }}>
+                <span className="chip pos">💾 {storage.engine}</span>
+                {storage.usage != null && <span className="chip">📦 {num(Math.max(1, Math.round(storage.usage / 1024)))} KB</span>}
+                {storage.persisted
+                  ? <span className="chip pos">🔒 محميّة من الحذف التلقائي</span>
+                  : <button className="btn sm soft" onClick={protectData}>🔒 احمِ بياناتي من الحذف التلقائي</button>}
+              </div>
+            )}
             <div className="row wrap">
               <button className="btn primary" onClick={exportData}>📤 {t('تصدير')} نسخة احتياطية</button>
               <button className="btn" onClick={() => file.current?.click()}>📥 {t('استيراد')}</button>
@@ -82,7 +105,7 @@ export default function Settings() {
             <div className="divider" />
             <div className="row wrap">
               <button className="btn danger" onClick={async () => { if (await askConfirm('تصفير نقاط الصف الحالي وسجلّه؟ يبقى الطلاب والحضور والحفظ.', '🔄 تصفير')) { st.resetPoints(); toast('🔄 تم تصفير النقاط'); } }}>🔄 تصفير النقاط (بداية فصل جديد)</button>
-              <button className="btn danger" onClick={async () => (await askConfirm('حذف كل الصفوف والطلاب والسجلات نهائيًا؟ لا يمكن التراجع. ننصح بأخذ نسخة احتياطية أولًا.', '⚠️ حذف كل شيء')) && st.resetAll()}>⚠️ حذف كل شيء</button>
+              <button className="btn danger" onClick={eraseEverything}>🗑️ مسح كل البيانات وإعادة الضبط</button>
             </div>
           </div>
         </div>
