@@ -125,7 +125,7 @@ export default function Home() {
         </div>
       </motion.div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))' }}>
         <motion.div className="card" variants={fadeUp} custom={5} initial="hidden" animate="show" style={{ background: 'linear-gradient(160deg, var(--brand-soft), var(--surface) 60%)' }}>
           <div className="card-title">📖 {t('آية اليوم')}</div>
           <p className="quote">﴿ {verse.text} ﴾</p>
@@ -149,16 +149,16 @@ export default function Home() {
         </motion.div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))' }}>
         <motion.div className="card" variants={fadeUp} custom={8} initial="hidden" animate="show">
           <div className="card-title">📊 نقاط الأسبوع</div>
-          <div className="row" style={{ alignItems: 'flex-end', height: 170, gap: 10, paddingTop: 10 }}>
+          <div className="row" style={{ alignItems: 'flex-end', height: 170, gap: 'clamp(4px, 2vw, 10px)', paddingTop: 10 }}>
             {week.map((w, i) => (
-              <div key={i} className="col" style={{ flex: 1, alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
+              <div key={i} className="col" style={{ flex: 1, minWidth: 0, alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
                 <b style={{ fontSize: 13 }}>{num(w.v)}</b>
                 <motion.div initial={{ height: 0 }} animate={{ height: `${(w.v / maxW) * 100}%` }} transition={{ delay: 0.3 + i * 0.07, type: 'spring', stiffness: 120, damping: 14 }}
                   style={{ width: '100%', maxWidth: 38, minHeight: 4, borderRadius: 10, background: i === 6 ? 'linear-gradient(180deg, var(--gold), var(--gold-2))' : 'linear-gradient(180deg, #34d399, var(--brand))' }} />
-                <span className="muted" style={{ fontSize: 12, fontWeight: 700 }}>{w.label}</span>
+                <span className="muted" style={{ fontSize: 'clamp(9.5px, 2.8vw, 12px)', fontWeight: 700, whiteSpace: 'nowrap' }}>{w.label}</span>
               </div>
             ))}
           </div>

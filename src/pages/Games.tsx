@@ -90,7 +90,7 @@ function Quiz() {
 
   if (!qs) {
     return (
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', alignItems: 'start' }}>
         <div className="card">
           <div className="card-title">📚 اختر المواضيع</div>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 10 }}>
@@ -273,7 +273,7 @@ function Order() {
   const allOk = correct === g.steps.length;
   const num = useNum();
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', alignItems: 'start' }}>
+    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', alignItems: 'start' }}>
       <div className="col" style={{ gap: 10 }}>
         {ORDER_GAMES.map((o) => (
           <motion.button key={o.id} whileTap={{ scale: 0.96 }} onClick={() => setGid(o.id)} className="card row"

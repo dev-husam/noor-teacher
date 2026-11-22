@@ -35,7 +35,7 @@ function Duas() {
   return (
     <>
       <p className="muted" style={{ marginBottom: 14 }}>👆 اضغط على البطاقة لتكشف الدعاء · اسأل الطلاب: «ماذا نقول...؟» قبل قلبها!</p>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))', gap: 14 }}>
         {DUAS.map((du, i) => {
           const up = flipped.includes(i);
           return (
@@ -114,7 +114,7 @@ function Names() {
 
 function Wisdom() {
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 14 }}>
       {[...VERSES.map((v) => ({ ...v, kind: 'آية' })), ...HADITHS.map((h) => ({ ...h, kind: 'حديث' }))].map((x, i) => (
         <motion.div key={i} className="card center" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1, transition: { delay: i * 0.03 } }} whileHover={{ y: -4 }}
           style={{ minHeight: 160, gap: 8, background: x.kind === 'آية' ? 'linear-gradient(160deg, var(--brand-soft), var(--surface) 70%)' : 'linear-gradient(160deg, var(--gold-soft), var(--surface) 70%)' }}>

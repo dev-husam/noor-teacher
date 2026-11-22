@@ -65,7 +65,7 @@ export default function Attendance() {
             <button className="btn primary" onClick={() => { setAttAll(date, 'present'); sfx.fanfare(); burst(0.5, 0.3); useUI.getState().toast('✅ تم تسجيل الجميع حاضرين — عدّل الغائبين فقط'); }}>✅ {t('الكل حاضر')}</button>
           </div>
 
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 12 }}>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(330px, 100%), 1fr))', gap: 12 }}>
             {c.students.map((s, i) => {
               const cur = day[s.id];
               const st = ST.find((x) => x.v === cur);

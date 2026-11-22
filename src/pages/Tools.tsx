@@ -85,7 +85,7 @@ function Wheel() {
   const pt = (a: number, r = R) => [R + r * Math.cos(((a - 90) * Math.PI) / 180), R + r * Math.sin(((a - 90) * Math.PI) / 180)];
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignItems: 'start' }}>
+    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', alignItems: 'start' }}>
       <div className="card center" style={{ padding: 24 }}>
         <div style={{ position: 'relative', width: 'min(440px, 100%)', aspectRatio: '1' }}>
           <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', zIndex: 2, fontSize: 40, filter: 'drop-shadow(0 4px 4px rgba(0,0,0,.3))' }}>🔻</div>
@@ -217,7 +217,7 @@ function Timer() {
   );
   return (
     <>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', alignItems: 'start' }}>
         <div className="card center" style={{ padding: 28 }}>{face(false)}{controls}</div>
         <div className="card">
           <div className="card-title">⚡ أوقات جاهزة</div>
@@ -359,7 +359,7 @@ function Noise() {
   const mood = level < limit * 0.5 ? ['😌', 'هدوء رائع', '#10B981'] : level < limit ? ['🙂', 'جيد', '#0EA5E9'] : level < limit * 1.25 ? ['😬', 'مرتفع قليلًا', '#F59E0B'] : ['🙉', 'صوت عالٍ جدًا!', '#EF4444'];
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignItems: 'start' }}>
+    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', alignItems: 'start' }}>
       <div className="card center" style={{ padding: 28, minHeight: 440, background: loud ? 'color-mix(in srgb, #EF4444 12%, var(--surface))' : undefined, transition: 'background .4s' }}>
         {!on ? (
           <Empty emoji="🎙️" title="مقياس الهدوء" text="يستمع للصف ويكافئكم بنجمة كل ٣٠ ثانية من الهدوء. الصوت لا يُسجّل ولا يُرسل لأي مكان."
@@ -437,7 +437,7 @@ function Groups() {
             <div className="card-title" style={{ margin: 0 }}>🏁 الفرق الحالية</div><div className="spacer" />
             <button className="btn sm danger" onClick={async () => (await askConfirm('إلغاء الفرق الحالية؟ تُحذف نقاط الفرق الإضافية.', 'إلغاء الفرق')) && clearTeams()}>إلغاء الفرق</button>
           </div>
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))', gap: 12 }}>
             {c.teams.map((tm) => (
               <div key={tm.id} className="card" style={{ padding: 14, background: `color-mix(in srgb, ${tm.color} 12%, var(--surface))`, borderColor: tm.color }}>
                 <div className="row"><span style={{ fontSize: 30 }}>{tm.emoji}</span><b style={{ fontSize: 18 }}>{tm.name}</b><div className="spacer" /><span className="chip gold">⭐ {num(teamScore(c, tm))}</span></div>
@@ -464,7 +464,7 @@ function Groups() {
       </div>
       {groups.length > 0 && (
         <>
-          <motion.div layout className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+          <motion.div layout className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))', gap: 14 }}>
             {groups.map((g, gi) => {
               const p = TEAM_PRESETS[gi % TEAM_PRESETS.length];
               return (

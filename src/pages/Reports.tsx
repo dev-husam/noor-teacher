@@ -64,7 +64,7 @@ export default function Reports() {
         ))}
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', marginBottom: 16 }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', marginBottom: 16 }}>
         <div className="card">
           <div className="card-title">📊 أكثر السلوكيات تكرارًا</div>
           {!byBehavior.length && <p className="muted">لا توجد بيانات في هذه الفترة</p>}

@@ -68,7 +68,7 @@ function Session() {
   };
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignItems: 'start' }}>
+    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', alignItems: 'start' }}>
       <div className="card">
         <div className="card-title">١. من سيُسمّع؟</div>
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(92px, 1fr))', gap: 8 }}>
@@ -168,7 +168,7 @@ function SurahProgress() {
   const num = useNum();
   const n = c.students.length;
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
+    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(260px, 100%), 1fr))', gap: 12 }}>
       {SURAHS.map((su, i) => {
         const m = c.students.filter((s) => (c.quran[s.id]?.[su.n] || 0) >= 2).length;
         const l = c.students.filter((s) => (c.quran[s.id]?.[su.n] || 0) === 1).length;

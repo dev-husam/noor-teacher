@@ -42,7 +42,7 @@ export default function Leaders() {
 
       {view === 'students' ? (
         !c.students.length ? <div className="card"><Empty emoji="🏆" title="لا يوجد طلاب بعد" /></div> : (
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', alignItems: 'start' }}>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))', alignItems: 'start' }}>
             <div className="card" style={{ background: 'linear-gradient(180deg, var(--gold-soft), var(--surface) 70%)' }}>
               <div className="podium">
                 {podiumOrder.map((x, k) => (

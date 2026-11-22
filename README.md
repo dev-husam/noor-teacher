@@ -4,6 +4,7 @@
 
 ## روابط
 
+- 🌐 GitHub Pages (PWA قابل للتثبيت ويعمل دون اتصال): https://dev-husam.github.io/noor-teacher/
 - 🚀 التطبيق المنشور: https://claude.ai/artifact/2WJ4f7AiTapmBHAchKKA3M
 - 🎨 دليل الهوية: https://claude.ai/artifact/Lc1qw2mgMisNqDG8yuwPdY
 
@@ -12,7 +13,7 @@
 ```bash
 npm install
 npm run dev      # http://localhost:5180
-npm run build    # نسخة الإنتاج في dist/
+npm run build    # نسخة الإنتاج في dist/ (PWA + Service Worker)
 npm run build:artifact   # نسخة الصفحة المنشورة على claude.ai (بدون طباعة، والحفظ عبر نافذة التنزيل)
 ```
 
@@ -33,3 +34,8 @@ npm run build:artifact   # نسخة الصفحة المنشورة على claude.
 | ⚙️ الإعدادات | عدة صفوف، تعديل السلوكيات والمكافآت، الوضع الليلي، العربية/English، نسخ احتياطي واستعادة |
 
 البيانات محفوظة محليًا في المتصفح (localStorage). الهوية البصرية موثّقة في `brand/brand-guide.html`.
+
+## النشر على GitHub Pages
+
+يُبنى التطبيق ويُنشر تلقائيًا عند كل دفع إلى `main` عبر `.github/workflows/deploy.yml`
+(Settings ← Pages ← Source: **GitHub Actions**). التطبيق PWA: يمكن تثبيته على الجوال أو الحاسوب ويعمل دون إنترنت بعد أول زيارة.

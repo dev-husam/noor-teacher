@@ -162,7 +162,7 @@ export function StudentForm({ initial, onSave, onCancel }: { initial?: Partial<S
           <Seg value={f.gender as 'boy' | 'girl'} onChange={(g) => up({ gender: g })} options={[{ v: 'boy', label: '👦 ولد' }, { v: 'girl', label: '👧 بنت' }]} />
         </div>
       </div>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: 12 }}>
         <div><label className="label">👨‍👩‍👧 اسم وليّ الأمر</label><input className="input" value={f.parentName} onChange={(e) => up({ parentName: e.target.value })} /></div>
         <div><label className="label">📱 جوال وليّ الأمر</label><input className="input" dir="ltr" inputMode="tel" value={f.parentPhone} onChange={(e) => up({ parentPhone: e.target.value })} placeholder="9665xxxxxxxx" /></div>
       </div>

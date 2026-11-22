@@ -40,7 +40,7 @@ function Store() {
   const [r, setR] = useState<Reward | null>(null);
   return (
     <>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 14 }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(190px, 100%), 1fr))', gap: 14 }}>
         {rewards.map((rw, i) => {
           const can = c.students.filter((s) => s.points >= rw.cost).length;
           return (
@@ -130,7 +130,7 @@ function Levels() {
   const c = useClass();
   const num = useNum();
   return (
-    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+    <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(240px, 100%), 1fr))', gap: 14 }}>
       {LEVELS.map((l, i) => {
         const here = c.students.filter((s) => levelOf(s.earned).index === i);
         return (

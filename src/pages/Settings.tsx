@@ -38,7 +38,7 @@ export default function Settings() {
   return (
     <div>
       <div className="topbar"><div><h1>⚙️ {t('الإعدادات')}</h1><div className="sub">خصّص نور ليناسب صفّك</div></div></div>
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', alignItems: 'start' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min(340px, 100%), 1fr))', alignItems: 'start' }}>
         <div className="col" style={{ gap: 16 }}>
           <div className="card">
             <div className="card-title">👤 المعلّم</div>
