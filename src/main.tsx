@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { registerServiceWorker } from './lib/pwa';
 import { requestPersistentStorage } from './lib/storage';
 import { useStore } from './store';
 import './styles.css';
@@ -20,6 +21,8 @@ const start = () => {
     const unsub = useStore.subscribe((s) => { if (s.settings.onboarded) { unsub(); requestPersistentStorage(); } });
   }
 };
+
+registerServiceWorker();
 
 // Saved data loads asynchronously from IndexedDB: render once it is in, so the
 // teacher continues exactly where they left off (with a safety timeout).

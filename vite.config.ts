@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       !isArtifact &&
         VitePWA({
           registerType: 'autoUpdate',
-          injectRegister: 'auto',
+          injectRegister: false, // registered in src/lib/pwa.ts (auto-reloads on new deploys)
           includeAssets: ['logo.svg', 'favicon.ico', 'apple-touch-icon-180x180.png'],
           manifest: {
             id: './',
@@ -40,6 +40,8 @@ export default defineConfig(({ mode }) => {
             globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
             navigateFallback: 'index.html',
             cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
             runtimeCaching: [
               {
                 urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
